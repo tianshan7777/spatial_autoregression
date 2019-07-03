@@ -1,5 +1,5 @@
 #Read CSV into R
-mydata <- read.csv(file="/Users/tianshan/Desktop/10minswalk.csv", header=TRUE, sep=",")
+mydata <- read.csv(file="10minswalk.csv", header=TRUE, sep=",")
 dim(mydata)
 
 library(spdep)
@@ -309,5 +309,72 @@ moran.mc(group10clean$residuals, group10.lw, 10)
 group10.lagrange <- lm.LMtests(m10, group10.lw, test=c("LMerr","RLMerr","LMlag","RLMlag","SARMA"))
 print(group10.lagrange)
 
+#
+#
+#lif, air conditioner, furnish, view(garden, panoramic, street), distance, shop, station, tourism, amenity
+group11 <- cbind.data.frame(mydata["latitude"],mydata["longitude"],mydata["price_per_sqm"], mydata["apartment"], mydata["number_of_half_rooms"], mydata["number_of_whole_rooms"], mydata["floor"], mydata["lift"], mydata["air_conditioner"], mydata["furnish_furnished"], mydata["view_garden"], mydata["view_panoramic"], mydata["view_street"], mydata["distance_to_danube"], mydata["quadratic_danube"], mydata["distance_to_city_centre"], mydata["quadratic_centre"], mydata["distance_to_keleti"], mydata["quadratic_keleti"], mydata["distance_to_nyugati"], mydata["quadratic_nyugati"], mydata["distance_to_deli"], mydata["quadratic_deli"])
+print("group X")
+group11clean <- na.omit(group11)
+dim(group11clean)
 
+#log price
+group11clean["logprice"] <- log(group11clean["price_per_sqm"])
+f11 <- logprice ~ apartment + number_of_half_rooms + number_of_whole_rooms + floor + lift + air_conditioner + furnish_furnished + view_garden + view_panoramic + view_street + distance_to_danube + quadratic_danube + distance_to_city_centre + quadratic_centre + distance_to_keleti + quadratic_keleti + distance_to_nyugati + quadratic_nyugati + distance_to_deli + quadratic_deli
+m11 <- lm(f11, data = group11clean)
+summary(m11)
+
+#spatial lag regression
+group11clean$residuals <- residuals(m11)
+#print(group1clean$residuals)
+
+group11.coord <- cbind(group11clean$latitude, group11clean$longitude)
+#head(coord)
+group11.knea <- knearneigh(group11.coord, longlat = TRUE)
+group11.nb <- knn2nb(group11.knea)
+group11.lw <- nb2listw(group11.nb)
+moran.mc(group11clean$residuals, group11.lw, 11)
+group11.slag = lagsarlm(f11, data = group11clean, group11.lw)
+summary(group11.slag)
+
+group11clean$residuals <- residuals(group11.slag)
+moran.mc(group11clean$residuals, group11.lw, 11)
+
+#Lagrange Multiplier Test Statistics for Spatial Autocorrelation 
+group11.lagrange <- lm.LMtests(m11, group11.lw, test=c("LMerr","RLMerr","LMlag","RLMlag","SARMA"))
+print(group11.lagrange)
+
+
+#
+#
+#lif, air conditioner, furnish, view(garden, panoramic, street), distance, shop, station, tourism, amenity
+group12 <- cbind.data.frame(mydata["latitude"],mydata["longitude"],mydata["price_per_sqm"], mydata["apartment"], mydata["number_of_half_rooms"], mydata["number_of_whole_rooms"], mydata["floor"], mydata["lift"], mydata["air_conditioner"], mydata["furnish_furnished"], mydata["view_garden"], mydata["view_panoramic"], mydata["view_street"], mydata["distance_to_danube"], mydata["quadratic_danube"], mydata["distance_to_city_centre"], mydata["quadratic_centre"])
+print("group X")
+group12clean <- na.omit(group12)
+dim(group12clean)
+
+#log price
+group12clean["logprice"] <- log(group12clean["price_per_sqm"])
+f12 <- logprice ~ apartment + number_of_half_rooms + number_of_whole_rooms + floor + lift + air_conditioner + furnish_furnished + view_garden + view_panoramic + view_street + distance_to_danube + quadratic_danube + distance_to_city_centre + quadratic_centre
+m12 <- lm(f12, data = group12clean)
+summary(m12)
+
+#spatial lag regression
+group12clean$residuals <- residuals(m12)
+#print(group1clean$residuals)
+
+group12.coord <- cbind(group12clean$latitude, group12clean$longitude)
+#head(coord)
+group12.knea <- knearneigh(group12.coord, longlat = TRUE)
+group12.nb <- knn2nb(group12.knea)
+group12.lw <- nb2listw(group12.nb)
+moran.mc(group12clean$residuals, group12.lw, 12)
+group12.slag = lagsarlm(f12, data = group12clean, group12.lw)
+summary(group12.slag)
+
+group12clean$residuals <- residuals(group12.slag)
+moran.mc(group12clean$residuals, group12.lw, 12)
+
+#Lagrange Multiplier Test Statistics for Spatial Autocorrelation 
+group12.lagrange <- lm.LMtests(m12, group12.lw, test=c("LMerr","RLMerr","LMlag","RLMlag","SARMA"))
+print(group12.lagrange)
 
